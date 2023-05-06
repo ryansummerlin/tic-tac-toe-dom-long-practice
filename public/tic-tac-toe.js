@@ -1,9 +1,11 @@
-
+// set up the empty board and populate it with null values
 let board = [];
 for (let i = 0; i < 3; i++) {
     board.push(Array(3).fill(null));
 }
 
+
+// Set up the grid container and the grid item boxes within
 const gridContainer = document.createElement("div");
 gridContainer.setAttribute("class", "grid-container");
 
@@ -21,8 +23,8 @@ const initializeBoard = function() {
     }
 }
 
+// The function for creating the X and O markers that will populate the board. This gets called in the makeMove function below
 let turnTracker = 0;
-
 const markerArr = ["x", "o"];
 
 const makeMarker = function(turnTracker) {
@@ -39,6 +41,9 @@ const makeMarker = function(turnTracker) {
     }
 }
 
+
+
+// Handle the user clicking on a square and check for a winner after
 const makeMove = function(event) {
     if (event.target.getAttribute("class") === "marker") {
         return;
@@ -72,6 +77,9 @@ const makeMove = function(event) {
 
 }
 
+
+
+// Game logic - check for a winner
 const checkWinner = function(board) {
     function checkHorizontalWinner() {
         for (let i = 0; i < board.length; i++) {
@@ -135,6 +143,6 @@ const checkWinner = function(board) {
     }
 }
 
-
+// event handlers for initializing the board and handling clicks on the board
 document.addEventListener("DOMContentLoaded", initializeBoard);
 gridContainer.addEventListener("click", makeMove);

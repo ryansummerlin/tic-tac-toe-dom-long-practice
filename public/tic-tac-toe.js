@@ -1,3 +1,5 @@
+
+
 // set up the empty board and populate it with null values
 const newBoard = function() {
     let board = [];
@@ -37,6 +39,16 @@ const initializeBoard = function() {
 
     buttonContainer.appendChild(newGameButton);
     buttonContainer.appendChild(giveUpButton);
+
+    // this is supposed to restore functionality after an autosave. I'm having a hard time getting the event listeners for give up and gridContainer to turn back on
+    // to fix next time I open this up
+    if (sessionStorage.getItem("autosave")) {
+        document.body.innerHTML = sessionStorage.getItem("autosave");
+        turnTracker = sessionStorage.getItem("turnTracker");
+        gridContainer.addEventListener("click", makeMove);
+        giveUpButton.addEventListener("click", giveUp);
+    }
+
 }
 
 // The function for creating the X and O markers that will populate the board. This gets called in the makeMove function below
@@ -102,6 +114,8 @@ const makeMove = function(event) {
         newGameButton.addEventListener("click", newGame);
         newGameButton.style.opacity = 1;
     }
+
+    autoSave();
 
 }
 
@@ -208,6 +222,14 @@ const giveUp = function(event) {
     giveUpButton.removeEventListener("click", giveUp);
     giveUpButton.style.opacity = 0.4;
 
+}
+
+
+// Autosave functionality
+const autoSave = function() {
+    const htmlContent = document.body.innerHTML;
+    sessionStorage.setItem("autosave", htmlContent);
+    sessionStorage.setItem("turnTracker", turnTracker);
 }
 
 

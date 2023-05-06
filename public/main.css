@@ -53,3 +53,7 @@ h2 {
     height: 90%;
     width: 90%;
 }
+
+.new-game, .give-up {
+    opacity: 0.4;
+}

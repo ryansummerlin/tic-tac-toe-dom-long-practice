@@ -1,13 +1,26 @@
 // set up the empty board and populate it with null values
-let board = [];
-for (let i = 0; i < 3; i++) {
-    board.push(Array(3).fill(null));
+const newBoard = function() {
+    let board = [];
+    for (let i = 0; i < 3; i++) {
+        board.push(Array(3).fill(null));
+    }
+
+    return board;
 }
 
+let board = newBoard();
 
 // Set up the grid container and the grid item boxes within
 const gridContainer = document.createElement("div");
 gridContainer.setAttribute("class", "grid-container");
+
+// Set up the buttons - they will get appended to the button-container element in the initializeBoard function
+const newGameButton = document.createElement("button");
+newGameButton.setAttribute("class", "new-game");
+newGameButton.innerText = "New Game";
+const giveUpButton = document.createElement("button");
+giveUpButton.setAttribute("class", "give-up");
+giveUpButton.innerText = "Give Up";
 
 const initializeBoard = function() {
     const buttonContainer = document.querySelector(".button-container");
@@ -21,11 +34,14 @@ const initializeBoard = function() {
             gridContainer.appendChild(gridItem);
         }
     }
+
+    buttonContainer.appendChild(newGameButton);
+    buttonContainer.appendChild(giveUpButton);
 }
 
 // The function for creating the X and O markers that will populate the board. This gets called in the makeMove function below
 let turnTracker = 0;
-const markerArr = ["x", "o"];
+const markerArr = ["X", "O"];
 
 const makeMarker = function(turnTracker) {
     if (turnTracker % 2 === 0) {
@@ -67,12 +83,24 @@ const makeMove = function(event) {
 
     turnTracker++;
 
+    if (turnTracker === 1) {
+        giveUpButton.addEventListener("click", giveUp);
+        giveUpButton.style.opacity = 1;
+    }
+
     if (checkWinner(board)) {
         let winner = checkWinner(board);
         const winnerHeader = document.querySelector("h2");
         winnerHeader.innerText = `Winner: ${winner}`;
         winnerHeader.style.display = 'block';
+
         gridContainer.removeEventListener("click", makeMove);
+
+        giveUpButton.removeEventListener("click", giveUp);
+        giveUpButton.style.opacity = 0.4;
+
+        newGameButton.addEventListener("click", newGame);
+        newGameButton.style.opacity = 1;
     }
 
 }
@@ -84,11 +112,11 @@ const checkWinner = function(board) {
     function checkHorizontalWinner() {
         for (let i = 0; i < board.length; i++) {
             let row = board[i];
-            if (row[0] === 'x' && row[1] === 'x' && row[2] === 'x') {
+            if (row[0] === 'X' && row[1] === 'X' && row[2] === 'X') {
                 return 'X';
             }
 
-            if (row[0] === 'o' && row[1] === 'o' && row[2] === 'o') {
+            if (row[0] === 'O' && row[1] === 'O' && row[2] === 'O') {
                 return 'O';
             }
         }
@@ -98,11 +126,11 @@ const checkWinner = function(board) {
 
     function checkVerticalWinner() {
         for (let i = 0; i < board.length; i++) {
-            if (board[0][i] === 'x' && board[1][i] === 'x' && board[2][i] === 'x') {
+            if (board[0][i] === 'X' && board[1][i] === 'X' && board[2][i] === 'X') {
                 return 'X';
             }
 
-            if (board[0][i] === 'o' && board[1][i] === 'o' && board[2][i] === 'o') {
+            if (board[0][i] === 'O' && board[1][i] === 'O' && board[2][i] === 'O') {
                 return 'O';
             }
         }
@@ -111,19 +139,19 @@ const checkWinner = function(board) {
     }
 
     function checkDiagonalWinner() {
-        if (board[0][0] === 'x' && board[1][1] === 'x' && board[2][2] === 'x') {
+        if (board[0][0] === 'X' && board[1][1] === 'X' && board[2][2] === 'X') {
             return 'X';
         }
 
-        if (board[0][0] === 'o' && board[1][1] === 'o' && board[2][2] === 'o') {
+        if (board[0][0] === 'O' && board[1][1] === 'O' && board[2][2] === 'O') {
             return 'O';
         }
 
-        if (board[0][2] === 'x' && board[1][1] === 'x' && board[2][0] === 'x') {
+        if (board[0][2] === 'X' && board[1][1] === 'X' && board[2][0] === 'X') {
             return 'X';
         }
 
-        if (board[0][2] === 'o' && board[1][1] === 'o' && board[2][0] === 'o') {
+        if (board[0][2] === 'O' && board[1][1] === 'O' && board[2][0] === 'O') {
             return 'O';
         }
 
@@ -142,6 +170,46 @@ const checkWinner = function(board) {
         return false;
     }
 }
+
+// New game functionality
+const newGame = function(event) {
+    const winnerHeader = document.querySelector("h2");
+    winnerHeader.style.display = "none";
+
+    board = newBoard();
+    // Grab all of the img elements and deletes them
+    const allMarkers = document.querySelectorAll("img");
+    for (let i = 0; i < allMarkers.length; i++) {
+        let child = allMarkers[i];
+        child.parentNode.removeChild(child);
+    }
+
+    turnTracker = 0;
+
+    gridContainer.addEventListener("click", makeMove);
+    newGameButton.removeEventListener("click", newGame);
+    newGameButton.style.opacity = 0.4;
+}
+
+
+// Give up functionality
+const giveUp = function(event) {
+    turnTracker++;
+    let winner = markerArr[turnTracker % 2];
+    const winnerHeader = document.querySelector("h2");
+    winnerHeader.innerText = `Winner: ${winner}`;
+    winnerHeader.style.display = 'block';
+
+    gridContainer.removeEventListener("click", makeMove);
+
+    newGameButton.addEventListener("click", newGame);
+    newGameButton.style.opacity = 1;
+
+    giveUpButton.removeEventListener("click", giveUp);
+    giveUpButton.style.opacity = 0.4;
+
+}
+
 
 // event handlers for initializing the board and handling clicks on the board
 document.addEventListener("DOMContentLoaded", initializeBoard);

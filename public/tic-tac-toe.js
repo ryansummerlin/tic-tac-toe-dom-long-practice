@@ -40,13 +40,22 @@ const initializeBoard = function() {
     buttonContainer.appendChild(newGameButton);
     buttonContainer.appendChild(giveUpButton);
 
-    // this is supposed to restore functionality after an autosave. I'm having a hard time getting the event listeners for give up and gridContainer to turn back on
-    // to fix next time I open this up
+    // Restore functionality after the browser gets reloaded
     if (sessionStorage.getItem("autosave")) {
         document.body.innerHTML = sessionStorage.getItem("autosave");
         turnTracker = sessionStorage.getItem("turnTracker");
+        board = sessionStorage.getItem("board");
+        const gridContainer = document.querySelector(".grid-container");
+        const giveUpButton = document.querySelector(".give-up");
+        const newGameButton = document.querySelector(".new-game");
         gridContainer.addEventListener("click", makeMove);
         giveUpButton.addEventListener("click", giveUp);
+
+        const winnerHeader = document.querySelector("h2");
+        if (winnerHeader.style.display === 'block') {
+            newGameButton.addEventListener("click", newGame);
+        }
+
     }
 
 }
@@ -73,6 +82,10 @@ const makeMarker = function(turnTracker) {
 
 // Handle the user clicking on a square and check for a winner after
 const makeMove = function(event) {
+    const gridContainer = document.querySelector(".grid-container");
+    const newGameButton = document.querySelector(".new-game");
+    const giveUpButton = document.querySelector(".give-up");
+
     if (event.target.getAttribute("class") === "marker") {
         return;
     }
@@ -116,6 +129,11 @@ const makeMove = function(event) {
     }
 
     autoSave();
+
+    if (!checkWinner(board)) {
+        gridContainer.removeEventListener("click", makeMove);
+        setTimeout(computerMakeMove, 1000);
+    }
 
 }
 
@@ -200,9 +218,14 @@ const newGame = function(event) {
 
     turnTracker = 0;
 
+    const gridContainer = document.querySelector(".grid-container");
+    const newGameButton = document.querySelector(".new-game");
+
     gridContainer.addEventListener("click", makeMove);
     newGameButton.removeEventListener("click", newGame);
     newGameButton.style.opacity = 0.4;
+
+    autoSave();
 }
 
 
@@ -214,13 +237,18 @@ const giveUp = function(event) {
     winnerHeader.innerText = `Winner: ${winner}`;
     winnerHeader.style.display = 'block';
 
+    const gridContainer = document.querySelector(".grid-container");
     gridContainer.removeEventListener("click", makeMove);
 
+    const newGameButton = document.querySelector(".new-game");
     newGameButton.addEventListener("click", newGame);
     newGameButton.style.opacity = 1;
 
+    const giveUpButton = document.querySelector(".give-up");
     giveUpButton.removeEventListener("click", giveUp);
     giveUpButton.style.opacity = 0.4;
+
+    autoSave();
 
 }
 
@@ -230,9 +258,62 @@ const autoSave = function() {
     const htmlContent = document.body.innerHTML;
     sessionStorage.setItem("autosave", htmlContent);
     sessionStorage.setItem("turnTracker", turnTracker);
+    sessionStorage.setItem("board", board);
 }
-
 
 // event handlers for initializing the board and handling clicks on the board
 document.addEventListener("DOMContentLoaded", initializeBoard);
 gridContainer.addEventListener("click", makeMove);
+
+
+// Computer moves code
+const computerMakeMove = function(event) {
+    const gridContainer = document.querySelector(".grid-container");
+
+    let row = Math.floor(Math.random() * 3);
+    let col = Math.floor(Math.random() * 3);
+
+    while (board[row][col]) {
+        row = Math.floor(Math.random() * 3);
+        col = Math.floor(Math.random() * 3);
+    }
+
+    board[row][col] = markerArr[turnTracker % 2];
+
+    let gridItemArr = document.querySelectorAll(".grid-item");
+    let selectedGridItem;
+    for (let i = 0; i < gridItemArr.length; i++) {
+        let box = gridItemArr[i];
+        if (box.dataset.row == row && box.dataset.col == col) {
+            selectedGridItem = box;
+        }
+    }
+
+    const marker = makeMarker(turnTracker);
+    selectedGridItem.appendChild(marker);
+
+    turnTracker++;
+    gridContainer.addEventListener("click", makeMove);
+
+    if (turnTracker === 1) {
+        giveUpButton.addEventListener("click", giveUp);
+        giveUpButton.style.opacity = 1;
+    }
+
+    if (checkWinner(board)) {
+        let winner = checkWinner(board);
+        const winnerHeader = document.querySelector("h2");
+        winnerHeader.innerText = `Winner: ${winner}`;
+        winnerHeader.style.display = 'block';
+
+        gridContainer.removeEventListener("click", makeMove);
+
+        giveUpButton.removeEventListener("click", giveUp);
+        giveUpButton.style.opacity = 0.4;
+
+        newGameButton.addEventListener("click", newGame);
+        newGameButton.style.opacity = 1;
+    }
+
+    autoSave();
+}
